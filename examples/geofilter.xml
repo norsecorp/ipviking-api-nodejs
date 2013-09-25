@@ -1,0 +1,25 @@
+<?xml version=1.0?>
+<ipviking>
+        <geofilter>
+                <filters>
+                        <command>add</command>
+                        <clientID>123456</clientID>
+                        <action>Allow</action>
+                        <category>Master</category>
+                        <country></country>
+                        <region></region>
+                        <city></city>
+                        <zip></zip>
+                </filters>
+                <filters>
+                        <command>add</command>
+                        <clientID>123456</clientID>
+                        <action>Deny</action>
+                        <category>zip</category>
+                        <country>US</country>
+                        <region></region>
+                        <city></city>
+                        <zip>13601</zip>
+                </filters>
+        </geofilter>
+</ipviking>
