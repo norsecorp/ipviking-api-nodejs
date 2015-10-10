@@ -1,71 +1,35 @@
 # IPViking API for Node.js
 
-This API is designed to be a simple API to making IPViking calls
-using node.js. As with other APIs, the goal is to make calling
+This API is designed to make IPViking calls
+from a Node.js app. As with other APIs, the goal is to make calling
 IPViking as easy as possible.
 
-## The simple version:
+## Installing
+
+`npm install --save ipviking`
+
+## Simple usage
 
 ```javascript
-IPVG = require ('IPVikingGetter.js')
-ipv = IPVG.IPVikingGetter
-ipv.configure(your_apikey, your_proxy)
-//ipv.set_config(name_val)			This is optional, see tests.js
-var myFunction  = function (data) {
-	//do something here
-}
-data = ipv.execute(method, {parameters}, myFunction)
+var MY_API_KEY = '12345abcdef';
+var ipv = require('ipviking')(MY_API_KEY);
+ipv.execute('ipq', {ip: '0.0.0.0'}, function (err, results) {
+    // Handle err & results
+});
 ```
 
 And that's it! In other words, import, configure, and execute it with a callback. End of story.
 
+## Advanced configuration
 
-## The (slightly) more complex version:
-This is a brief source dive into this API. Luckily, it's very, very small.  Everything is in one object in IPVikingGetter.js. Literally.
+Pass in a configuration object instead of an api key at the initial configure step:
 
-### IPVikingGetter
-This is our primary object; it does it all for you. It slices, dices, it'll even make you a salad (if by salad you mean you don't even need to configure it for it to run). Here's how it looks:
+`var ipv = require('ipviking')({apiKey: 'asdf', proxy: 'UNIVERSAL'});`
 
-#### Constants
+`ipv` also exposes its `config` property for later modification.  See tests.js for examples.
 
-These are mainly for reference, though they can be used
-
-`PROXIES` is map of our current proxies. Pick the best one.
-`OPTIONS` is a list of the options currently accepted by the API.
-
-#### Runtime options
-
-Settings to control the API's function
-
-`loud` is a boolean that toggles warnings.
-`strict` is a boolean that controls the validation, allowing you to break on bad inputs (if you like).
-
-#### Config
-
-This is your main control panel. Anything can be run from here
-
-`config` a map of all our config options. Including the options for specific calls, like IP address, though you can also override that.
-`configure` makes sure we have an apikey and proxy set up. Hard to run without those.
-`set_config(name, value)` helper function to set a config value. Unset by setting to null.
-
-#### Request builders
-
-Helper functions to build the request arguments and body.
-
-`get_args` builds the args to be passed to HTTP.request.
-`get_body` builds a URL-encoded string from your parameters.
-
-#### Validators
-
-Functions to validate your args before requesting.
-
-IMPORTANT: RUN `VALIDATE_OPTIONS` FIRST.
-
-`validate_args` validates that we've got values for our essential args.
-`validate_options` scrubs values, making sure there's nothing unexpected.
-
-#### And finally, execute
-`execute`: calls the validators and builders in order, then makes the http request. Lookie, it'll even hand you back a map from the JSON respone!
+#### `execute`
+Calls the validators and builders in order, then makes the http request to the API.  Lookie, it'll even hand you back a map from the JSON respone!
 
 That's all! Told you it was simple. So what else is here?
 
