@@ -1,0 +1,32 @@
+{
+  "name": "ipviking",
+  "version": "1.0.0",
+  "description": "Library for Norse's IP Viking API",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/norsecorp/ipviking-api-nodejs.git"
+  },
+  "keywords": [
+    "IPViking",
+    "Norse",
+    "IP",
+    "Viking"
+  ],
+  "author": "Norse",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/norsecorp/ipviking-api-nodejs/issues"
+  },
+  "homepage": "https://github.com/norsecorp/ipviking-api-nodejs#readme",
+  "devDependencies": {
+    "eslint": "^1.6.0"
+  }
+}

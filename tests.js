@@ -1,6 +1,6 @@
 'use strict';
 
-var IPVG = require('./IPVikingGetter.js');
+var IPVG = require('./index');
 
 //create an instance and initialize with the default values
 var ipv = IPVG.IPVikingGetter;
