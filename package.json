@@ -1,0 +1,16 @@
+{
+  "name": "ipviking",
+  "version": "0.9.0",
+  "description": "Library for Norse's IP Viking API",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/norsecorp/ipviking-api-nodejs.git"
+  },
+  "keywords": [
+    "IPViking",
+    "Norse",
+    "IP",
+    "Viking"
+  ],
+  "author": "Norse"
+}
