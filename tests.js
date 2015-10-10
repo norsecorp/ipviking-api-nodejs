@@ -9,7 +9,7 @@ ipv.configure();
 //create a callback function to feed to execute
 var print_it = function (err, results) {
   if (err) {
-    console.war(err);
+    console.warn(err);
   } else {
     console.log(results);
   }
