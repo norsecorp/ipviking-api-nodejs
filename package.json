@@ -1,6 +1,6 @@
 {
   "name": "ipviking",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Library for Norse's IP Viking API",
   "repository": {
     "type": "git",
