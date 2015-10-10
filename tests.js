@@ -1,41 +1,40 @@
 'use strict';
 
-var IPVG = require('./index');
+var DEMO_API_KEY = '8292777557e8eb8bc169c2af29e87ac07d0f1ac4857048044402dbee06ba5cea';
 
-//create an instance and initialize with the default values
-var ipv = IPVG.IPVikingGetter;
-ipv.configure();
+var ipv = require('./index')(DEMO_API_KEY);
 
 //create a callback function to feed to execute
-var print_it = function (err, results) {
+function printIt(err, results) {
   if (err) {
     console.warn(err);
   } else {
     console.log(results);
   }
-};
+}
 
 //call each method with explicit parameters
-ipv.execute('ipq', {ip:'208.64.76.5'}, print_it);
-ipv.execute('risk', {ip:'208.64.76.5'}, print_it);
-ipv.execute('geofilter', {geofilterxml:'examples/geofilter.xml'}, print_it);
-ipv.execute('riskfactor', {riskfactorxml:'examples/riskfactor.xml'}, print_it);
-ipv.execute('submission', {ip:'208.64.76.5', category:13, protocol: 51}, print_it);
+ipv.execute('ipq', {ip:'208.64.76.5'}, printIt);
+ipv.execute('risk', {ip:'208.64.76.5'}, printIt);
+ipv.execute('geofilter', {geofilterxml:'examples/geofilter.xml'}, printIt);
+ipv.execute('riskfactor', {riskfactorxml:'examples/riskfactor.xml'}, printIt);
+ipv.execute('submission', {ip:'208.64.76.5', category:13, protocol: 51}, printIt);
 
 //control parameters by setting config values
-ipv.set_config('callback', print_it);
-ipv.set_config('ip','208.74.76.5');
+ipv.config.callback =  printIt;
+ipv.config.ip = '208.74.76.5';
+
 ipv.execute('ipq');
 ipv.execute('risk');
 
-ipv.set_config('riskfactorxml', 'examples/riskfactor.xml');
+ipv.config.riskfactorxml = './examples/riskfactor.xml';
 ipv.execute('riskfactor');
-ipv.set_config('riskfactorxml', null);
+ipv.config.riskfactorxml = null;
 
-ipv.set_config('geofilterxml', 'examples/geofilter.xml');
+ipv.config.geofilterxml = './examples/geofilter.xml';
 ipv.execute('geofilter');
-ipv.set_config('geofilterxml', null);
+ipv.config.geofilterxml = null;
 
-ipv.set_config('category', 13);
-ipv.set_config('protocol', 51);
+ipv.category = 13;
+ipv.protocol = 51;
 ipv.execute('submission');

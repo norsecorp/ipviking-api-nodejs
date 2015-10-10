@@ -4,220 +4,224 @@ var http = require('http');
 var fs = require('fs');
 var qs = require('querystring');
 
-var IPVikingGetter = {
-  //constants
-  PROXIES: {
-    'UNIVERSAL': 'api.ipviking.com',
-    'NORTHAMERICA': 'us.api.ipviking.com',
-    'EUROPE': 'eu.api.ipviking.com',
-    'ASIAPACIFIC': 'as.api.ipviking.com',
-    'SOUTHAMERICA': 'la.api.ipviking.com',
-    'SANDBOX': 'beta.ipviking.com'
-  },
-  OPTIONS: [
-    'apikey',
-    'method',
-    'ip',
-    'transID',
-    'customID',
-    'address',
-    'city',
-    'zip',
-    'state',
-    'country',
-    'categories',
-    'options',
-    'protocol',
-    'category',
-    'timestamp',
-    'noresolve',
-    'url_details',
-    'suppress',
-    'compress',
-    'haversine'
-  ],
-
-  //run settings
-  loud: true,
-  strict: false,
-
-  //configuration functions
-  config: {
-    'apikey': '8292777557e8eb8bc169c2af29e87ac07d0f1ac4857048044402dbee06ba5cea',
-    'proxy': 'beta.ipviking.com',
-    'method': 'ipq',
-    'callback': console.log,
-    'ip': '208.74.76.5',
-    'transID': '0',
-    'clientID': '1',
-    'customID': '2',
-    'address': '1014 Ericsson Way',
-    'city': 'Reykjavik',
-    'zip': '00000',
-    'state': 'The Land of Ice and Snow',
-    'country': 'Iceland',
-    'categories': null,
-    'options': null,
-    'protocol': '51',
-    'category': '13',
-    'timestamp': null,
-    'headers': {
-      'Host': 'beta.ipviking.com',
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Accept-Encoding': 'gzip, deflate, compress',
-      'Accept': 'application/json'
-    }
-  },
-
-  configure: function(apikey, proxy) {
-    apikey ? this.config.apikey = apikey : null;
-    proxy ? this.config.proxy = proxy : null;
-  },
-  set_config: function(name, value) {
-    this.config[name] = value;
-  },
-
-  set_callback: function(callback_fn) {
-    this.config.callback = callback_fn;
-  },
-
-  //request builders
-  get_args: function(method, body) {
-    var args = {
-      hostname: this.config.proxy,
-      path: 'http://' + this.config.proxy + '/api/',
-      port: 80,
-      method: method === 'submission' ? 'PUT' : 'POST',
-      headers: this.config.headers
-    };
-    args.headers['Content-Length'] = body.length;
-    return args;
-  },
-
-  get_body: function(method, params) {
-    params.method = method;
-    params.apikey = this.config.apikey;
-    var body = qs.stringify(params);
-    return body;
-  },
-
-  //validators
-  validate_params: function(method, params, config, loud) {
-    loud = loud || this.loud;
-    config = config || this.config;
-    params = params || {};
-    method = method || this.config.method;
-
-    var validity = {
-      valid: true,
-      errors: '',
-      params: params
-    };
-    var add_error = function(err) {
-      validity.valid = false;
-      validity.errors += (err + ' | ');
-      loud ? console.log(err) : null;
-    };
-    var getcontent = function(arg, filename) {
-      var content = fs.readFileSync(filename).toString();
-      content ? validity.params[arg] = content : validity.add_error('Invalid file name: no content.');
-    };
-    var do_nothing = function() {};
-
-    var test_arg = function(arg, callback) {
-      params[arg] = params[arg] || config[arg];
-      params[arg] === null ?
-        add_error('Missing argument: ' + arg) :
-        callback(arg, params[arg]);
-    };
-    switch (method) {
-      case 'ipq':
-        test_arg('ip', do_nothing);
-        break;
-      case 'risk':
-        test_arg('ip', do_nothing);
-        break;
-      case 'riskfactor':
-        test_arg('riskfactorxml', getcontent);
-        break;
-      case 'geofilter':
-        test_arg('geofilterxml', getcontent);
-        break;
-      case 'submission':
-        test_arg('ip', do_nothing);
-        test_arg('category', do_nothing);
-        test_arg('protocol', do_nothing);
-        break;
-      default:
-        add_error('Invalid method. Must be one of: ipq, risk, geofilter, riskfactor, submission.');
-    }
-    return validity;
-  },
-
-  validate_options: function(params, strict, loud) {
-    params = params || {};
-    strict = strict || this.strict;
-    loud = loud || this.loud;
-    var validity = {
-      valid: true,
-      options: {}
-    };
-    var warn = function(warning) {
-      this.strict ? this.validity.valid = false : null;
-      this.loud ? console.log(warning) : null;
-    };
-    var options = this.OPTIONS;
-    var check = function(key) {
-      options[key] ?
-        warn('Invalid option: ' + key) :
-        validity.options[key] = params[key];
-    };
-
-    Object.keys(params).forEach(check);
-    return validity;
-  },
-
-  execute: function(method, params, callback) {
-    //normalize args to defaults
-    method = method || this.config.method;
-    callback = callback || this.config.callback;
-
-    //validate required and optional parameters
-    var opt_valid = this.validate_options(params);
-    params = opt_valid.options;
-    var req_valid = this.validate_params(method, params);
-    if (!req_valid.valid) {
-      callback(req_valid.errors);
-    } else {
-      params = req_valid.params;
-    }
-
-    //get body, args, and buffer
-    var body = this.get_body(method, params);
-    var args = this.get_args(method, body);
-    var resp_buffer = '';
-
-
-    //make request
-    var req = http.request(args, function(res) {
-      res.on('data', function(chunk) {
-        resp_buffer += chunk;
-      });
-      res.on('end', function() {
-        if (res.headers['content-type'] === 'application/json') {
-          callback(null, JSON.parse(resp_buffer));
-        } else {
-          callback(null, resp_buffer);
-        }
-      });
-    });
-
-    req.on('error', function(error) {
-      callback(error);
-    });
-    req.write(body);
-    req.end();
-  }
+// Constants
+var proxies = {
+  UNIVERSAL: 'api.ipviking.com',
+  NORTHAMERICA: 'us.api.ipviking.com',
+  EUROPE: 'eu.api.ipviking.com',
+  ASIAPACIFIC: 'as.api.ipviking.com',
+  SOUTHAMERICA: 'la.api.ipviking.com',
+  SANDBOX: 'beta.ipviking.com'
 };
 
-module.exports.IPVikingGetter = IPVikingGetter;
+var options = [
+  'apiKey',
+  'method',
+  'ip',
+  'transID',
+  'customID',
+  'address',
+  'city',
+  'zip',
+  'state',
+  'country',
+  'categories',
+  'options',
+  'protocol',
+  'category',
+  'timestamp',
+  'noresolve',
+  'url_details',
+  'suppress',
+  'compress',
+  'haversine'
+];
+
+var config = {
+  callback: console.log,
+  method: 'ipq',
+
+  transID: '0',
+  clientID: '1',
+  customID: '2',
+  address: '1014 Ericsson Way',
+  city: 'Reykjavik',
+  zip: '00000',
+  state: 'The Land of Ice and Snow',
+  country: 'Iceland',
+  categories: null,
+  options: null,
+  protocol: '51',
+  category: '13',
+  timestamp: null,
+  headers: {
+    Host: 'beta.ipviking.com',
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Accept-Encoding': 'gzip, deflate, compress',
+    Accept: 'application/json'
+  },
+  loud: true,
+  strict: false
+};
+
+
+function getArgs(method, body) {
+  var args = {
+    hostname: config.proxy,
+    path: 'http://' + config.proxy + '/api/',
+    port: 80,
+    method: method === 'submission' ? 'PUT' : 'POST',
+    headers: config.headers
+  };
+  args.headers['Content-Length'] = body.length;
+  return args;
+}
+
+function getBody(method, params) {
+  params.method = method;
+  // apikey has to be all lowercase here
+  params.apikey = config.apiKey;
+
+  return qs.stringify(params);
+}
+
+function validateOptions(params) {
+  params = params || {};
+
+  var validity = {
+    valid: true,
+    options: {}
+  };
+
+  function warn(warning) {
+    if (config.strict) { validity.valid = false; }
+    if (config.loud) { console.log(warning); }
+  }
+  function check(key) {
+    if (options[key]) {
+      return warn('Invalid option: ' + key);
+    }
+    validity.options[key] = params[key];
+  }
+
+  Object.keys(params).forEach(check);
+  return validity;
+}
+
+
+// Validators
+function validateParams(method, params) {
+  params = params || {};
+  method = method || config.method;
+
+  var validity = {
+    valid: true,
+    errors: '',
+    params: params
+  };
+
+  function addError(err) {
+    validity.valid = false;
+    validity.errors += (err + ' | ');
+    if(config.loud) { console.log(err); }
+  }
+  function getContent(arg, filename) {
+    var content = fs.readFileSync(filename, 'utf-8');
+    if (!content) {
+      return validity.addError('Invalid file name: No content.');
+    }
+
+    validity.params[arg] = content;
+  }
+
+  var testArg = function(arg, callback) {
+    params[arg] = params[arg] || config[arg];
+    params[arg] === null ?
+      addError('Missing argument: ' + arg) :
+      callback(arg, params[arg]);
+  };
+  switch (method) {
+    case 'riskfactor':
+      testArg('riskfactorxml', getContent);
+      break;
+    case 'geofilter':
+      testArg('geofilterxml', getContent);
+      break;
+    case 'ipq':
+    case 'risk':
+    case 'submission':
+      break;
+    default:
+      addError('Invalid method. Must be one of: ipq, risk, geofilter, riskfactor, submission.');
+  }
+  return validity;
+}
+
+// Return function that takes apiKey params and returns the thing
+function init(_config) {
+  if (!_config) {
+    throw new Error('Config is required');
+  }
+  if (typeof _config === 'string') {
+    // They just passed in the key as a string
+    config.apiKey = _config;
+  } else {
+    if (!_config.apiKey) {
+      throw new Error('API key is required');
+    }
+    Object.keys(_config).forEach(function (key) {
+      if (config[key]) {
+        config[key] = _config[key];
+      }
+    });
+  }
+
+  // Special-case proxy so the user can set it to NORTHAMERICA, etc
+  config.proxy = proxies[_config.proxy] || _config.proxy || proxies.SANDBOX;
+
+  return {
+    execute: function(method, params, callback) {
+      callback = callback || config.callback;
+
+      // Validate required and optional parameters
+      var optValid = validateOptions(params);
+      params = optValid.options;
+
+      var reqValid = validateParams(method, params);
+
+      if (!reqValid.valid) {
+        callback(reqValid.errors);
+      } else {
+        params = reqValid.params;
+      }
+
+      // Get body, args, and buffer
+      var body = getBody(method, params);
+      var args = getArgs(method, body);
+      var respBuffer = '';
+
+      // Make request
+      var req = http.request(args, function(res) {
+        res.on('data', function(chunk) {
+          respBuffer += chunk;
+        });
+        res.on('end', function() {
+          if (res.headers['content-type'] === 'application/json') {
+            callback(null, JSON.parse(respBuffer));
+          } else {
+            callback(null, respBuffer);
+          }
+        });
+      });
+
+      req.on('error', function(error) {
+        callback(error);
+      });
+      req.write(body);
+      req.end();
+    },
+    config: config
+  };
+}
+
+module.exports = init;
