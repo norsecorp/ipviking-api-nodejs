@@ -1,6 +1,8 @@
-var http = require("http");
-var fs = require("fs");
-var qs = require("querystring");
+'use strict';
+
+var http = require('http');
+var fs = require('fs');
+var qs = require('querystring');
 
 var IPVikingGetter = {
     //constants
@@ -74,10 +76,10 @@ var IPVikingGetter = {
 
     //request builders
     get_args : function (method, body) {
-      args = {hostname:this.config.proxy,
+      var args = {hostname:this.config.proxy,
           path: 'http://'+this.config.proxy+'/api/',
           port: 80,
-          method: method=='submission' ? "PUT" : "POST",
+          method: method === 'submission' ? "PUT" : "POST",
           headers:this.config.headers
           };
       args.headers['Content-Length'] = body.length;
@@ -87,7 +89,7 @@ var IPVikingGetter = {
     get_body : function (method, params) {
       params.method=method;
       params.apikey=this.config.apikey;
-      body = qs.stringify(params);
+      var body = qs.stringify(params);
       return body;
     },
 
@@ -109,7 +111,7 @@ var IPVikingGetter = {
         loud ? console.log(err) : null;
       };
       var getcontent = function (arg, filename) {
-        content = fs.readFileSync(filename).toString();
+        var content = fs.readFileSync(filename).toString();
         content ? validity.params[arg]=content : validity.add_error("Invalid file name: no content.");
       };
       var do_nothing = function (arg1, arg2) {
@@ -150,16 +152,16 @@ var IPVikingGetter = {
       params = params || {};
       strict = strict || this.strict;
       loud = loud || this.loud;
-      validity = {valid:true, options:{}};
-      warn = function(warning) {
+      var validity = {valid:true, options:{}};
+      var warn = function(warning) {
         this.strict ? this.validity.valid = false : null;
         this.loud ? console.log(warning) : null;
       };
-      options = this.OPTIONS;
-      check = function(key) {
-        (key in this.options) ?
-            this.warn("Invalid option: "+key) :
-            this.validity.options[key]=params[key];
+      var options = this.OPTIONS;
+      var check = function (key) {
+        options[key] ?
+          warn("Invalid option: " + key) :
+          validity.options[key] = params[key];
       };
 
       Object.keys(params).forEach(check);

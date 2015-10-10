@@ -1,7 +1,9 @@
-IPVG = require('./IPVikingGetter.js');
+'use strict';
+
+var IPVG = require('./IPVikingGetter.js');
 
 //create an instance and initialize with the default values
-ipv = IPVG.IPVikingGetter;
+var ipv = IPVG.IPVikingGetter;
 ipv.configure();
 
 //create a callback function to feed to execute
