@@ -7,8 +7,12 @@ var ipv = IPVG.IPVikingGetter;
 ipv.configure();
 
 //create a callback function to feed to execute
-var print_it = function (results) {
-	console.log(results);
+var print_it = function (err, results) {
+  if (err) {
+    console.war(err);
+  } else {
+    console.log(results);
+  }
 };
 
 //call each method with explicit parameters

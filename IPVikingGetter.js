@@ -178,7 +178,7 @@ var IPVikingGetter = {
       params = opt_valid.options;
       var req_valid = this.validate_params(method, params);
       if (!req_valid.valid) {
-        console.log("Request invalid. Errors: "+req_valid.errors);
+        callback(req_valid.errors);
       } else {
         params = req_valid.params;
       }
@@ -196,15 +196,15 @@ var IPVikingGetter = {
         });
         res.on('end', function() {
           if (res.headers['content-type']==='application/json'){
-            callback(JSON.parse(resp_buffer));
+            callback(null, JSON.parse(resp_buffer));
           } else {
-            callback(resp_buffer);
+            callback(null, resp_buffer);
           };
         });
       });
 
       req.on('error', function(error) {
-        console.log("Request error: Error: "+error.message);
+        callback(error);
       });
       req.write(body);
       req.end();
