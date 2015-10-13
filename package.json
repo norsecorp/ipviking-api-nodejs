@@ -1,6 +1,6 @@
 {
   "name": "ipviking",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Library for Norse's IP Viking API",
   "main": "index.js",
   "directories": {
