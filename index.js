@@ -170,7 +170,7 @@ function init(_config) {
       throw new Error('API key is required');
     }
     Object.keys(_config).forEach(function (key) {
-      if (config[key]) {
+      if (_config[key]) {
         config[key] = _config[key];
       }
     });
